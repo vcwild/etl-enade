@@ -2,6 +2,7 @@ from prefect import task
 import prefect
 import pandas as pd
 from os import system
+from google.cloud import storage
 
 
 @task
@@ -185,11 +186,28 @@ def join_data(df, estcivil, cor, escopai, escomae, renda):
   logger = prefect.context.get('logger')
   logger.info(tidy.head(5).to_json())
 
+  tidy = tidy.head(1000)
+
   return tidy
 
 
 @task
 def write_csv(df):
-  """Write the cache df to a csv file and remove the source material"""
+  """Write the cache df to a csv file and remove the source directory"""
   df.to_csv('enade2019.csv', index=False)
   system('rm ./microdados_enade_2019 -rf')
+
+
+@task
+def upload_blob(bucket_name, source_file_name, destination_blob_name):
+    """Uploads a file to the bucket."""
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+
+    blob.upload_from_filename(source_file_name)
+
+    logger = prefect.context.get('logger')
+    logger.info("File {} uploaded to {}.".format(source_file_name, destination_blob_name))
+
+    system('rm enade2019.csv -rf')
