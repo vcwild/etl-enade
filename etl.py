@@ -1,10 +1,11 @@
 from datetime import timedelta
+from prefect.engine.executors import DaskExecutor
 from prefect import Flow
 from prefect.schedules import IntervalSchedule
 from tasks import *
 
 
-schedule = IntervalSchedule(interval=timedelta(minutes=5))
+schedule = IntervalSchedule(interval=timedelta(hours=24))
 
 bucket_name = "etl-demo-fractal"
 source_file_name = "./enade2019.csv"
@@ -15,11 +16,11 @@ def main():
     path = get_raw_data()
 
     filters = apply_filters(path)
-    estcivil = clean_estcivil(filters)
-    cor = clean_cor(filters)
-    escopai = clean_escopai(filters)
-    escomae = clean_escomae(filters)
-    renda = clean_renda(filters)
+    estcivil = transform_estcivil(filters)
+    cor = transform_cor(filters)
+    escopai = transform_escopai(filters)
+    escomae = transform_escomae(filters)
+    renda = transform_renda(filters)
 
     joined_data = join_data(filters, estcivil, cor, escopai, escomae, renda)
     write = write_csv(joined_data)
