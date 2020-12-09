@@ -46,7 +46,7 @@ def apply_filters(path):
 
 
 @task
-def clean_estcivil(df):
+def transform_estcivil(df):
   """Cleanses the `estcivil` feature
 
   Args:
@@ -68,7 +68,7 @@ def clean_estcivil(df):
 
 
 @task
-def clean_cor(df):
+def transform_cor(df):
   """Cleanses the `cor` feature
 
   Args:
@@ -92,7 +92,7 @@ def clean_cor(df):
 
 
 @task
-def clean_escopai(df):
+def transform_escopai(df):
   """Cleanses the `escopai` feature
 
   Args:
@@ -115,7 +115,7 @@ def clean_escopai(df):
 
 
 @task
-def clean_escomae(df):
+def transform_escomae(df):
   """Cleanses the `escomae` feature
 
   Args:
@@ -138,7 +138,7 @@ def clean_escomae(df):
 
 
 @task
-def clean_renda(df):
+def transform_renda(df):
   """Cleanses the `estcivil` feature
 
   Args:
