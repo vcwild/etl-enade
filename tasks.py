@@ -1,27 +1,42 @@
 from prefect import task
 import prefect
 import pandas as pd
+import os
 from os import system
 from google.cloud import storage
+from zipfile import ZipFile
+from prefect.engine.signals import SKIP
+from prefect.tasks.shell import ShellTask
 
 
 @task
-def get_raw_data():
-  """Get the raw data from the defined url, unzip and define the project path
+def curl_cmd(url: str, fname: str) -> str:
+    """
+    The curl command we wish to execute.
+    """
+    if os.path.exists(fname):
+        raise SKIP("Image data file already exists.")
+
+    return "curl -fL -o {fname} {url}".format(fname=fname, url=url)
+
+
+@task
+def unzip(fname: str):
+  """Extract all the contents of zip file in current directory
 
   Returns:
       path: path of the unzipped dataset
   """
-  system('wget http://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2019.zip --no-check-certificate && \
-    unzip microdados_enade_2019.zip && \
-    rm microdados_enade_2019.zip')
+  with ZipFile(fname, 'r') as zipObj:
+   zipObj.extract('microdados_enade_2019/2019/3.DADOS/microdados_enade_2019.txt')
+  
   path = "./microdados_enade_2019/2019/3.DADOS/"
 
   return path
 
 
 @task
-def apply_filters(path):
+def apply_filters(path: str):
   """Read the dataset and apply hardcoded
 
   Args:
@@ -195,7 +210,7 @@ def join_data(df, estcivil, cor, escopai, escomae, renda):
 def write_csv(df):
   """Write the cache df to a csv file and remove the source directory"""
   df.to_csv('enade2019.csv', index=False)
-  system('rm ./microdados_enade_2019 -rf')
+  system('rm ./microdados_enade_2019 -rf && rm microdados_enade_2019.zip')
 
 
 @task
